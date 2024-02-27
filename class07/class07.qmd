@@ -1,0 +1,223 @@
+---
+title: "Class 07: Machine Learning"
+author: "Lana (PID:A17013518)"
+format: pdf
+---
+
+# Clustering Methods
+
+The broad goal here is to find grouping (clusters) in your input data.
+
+## Kmeans
+
+First, let's make up some data to cluster. 
+
+
+
+```{r}
+x <- rnorm(1000)
+hist(x)
+```
+
+Make a vector of length 60 with 30 points centered at -3 and 30 points centered at +3
+```{r}
+tmp <- c(rnorm(30, mean = -3), rnorm(30, mean=3))
+tmp
+```
+
+I will now make a wee x and y dataset with 2 groups of points. 
+
+
+```{r}
+rev(c(1:5))
+```
+
+```{r}
+x <- cbind(x=tmp, y=rev(tmp))
+plot(x)
+```
+
+```{r}
+k <- kmeans(x, centers = 2)
+k
+```
+
+> Q. From your result object `k` how many ponts are in each cluster?
+
+```{r}
+k$size
+```
+
+> Q. What "component" of your result object details the cluster membership?
+
+```{r}
+k$cluster
+```
+
+> Q. Cluster centers?
+
+```{r}
+k$centers
+```
+
+> Plot for clustering results
+
+```{r}
+plot(x, col = k$cluster)
+points(k$centers, col = "pink", pch = 15, cex = 2)
+```
+
+
+We can cluster into 4 groups
+```{r}
+# kmeans
+k4 <- kmeans(x, centers = 4)
+# plot results
+plot(x, col = k4$cluster)
+```
+
+A big limitation of kmeans is that it does what you ask even if you ask for silly clusters. 
+
+## Hierarchical Clustering
+
+The main base R function for Hierarchical Clustering is `hclust()`. Unlike `kmeans()` you can not just pass it your data as input. You first need to calculate distance matrix. 
+
+```{r}
+d <- dist(x)
+hc <- hclust(d)
+hc
+```
+
+Use `plot()` to view results
+
+```{r}
+plot(hc)
+abline(h=10, col = "pink")
+```
+
+To make the "cut" and get our cluster membership vector we can use the `cutree()` function.
+
+```{r}
+grps <- cutree(hc, h=10)
+grps
+```
+
+Make a plot of data  colored by hclust results
+
+```{r}
+plot(x, col=grps)
+```
+
+## principal Component Analysis (PCA)
+
+Here we will do principal component analysis (PCA) on some food data from the UK. 
+
+
+```{r}
+url <- "https://tinyurl.com/UK-foods"
+x <- read.csv(url, row.names = 1)
+```
+
+```{r}
+# rownames(x) <- x[,1]
+# x <- x[, -1]
+# x
+```
+
+> Q1. How many rows and columns are in your new data frame named x? What R functions could you use to answer this questions?
+
+```{r}
+dim(x)
+```
+
+> Q2. Which approach to solving the ‘row-names problem’ mentioned above do you prefer and why? Is one approach more robust than another under certain circumstances?
+
+```{r}
+# I prefer the first approach just because it looks more simple and clean in the code and doesn't have so many parts
+```
+
+> Q3: Changing what optional argument in the above barplot() function results in the following plot?
+
+```{r}
+# Changing beside to false results in changing the barplot because if false, columns of height are portrayed as stacked bars whereas if true, the columns are portrayed as juxtaposed bars
+barplot(as.matrix(x), beside=F, col=rainbow(nrow(x)))
+```
+
+> Q5: Generating all pairwise plots may help somewhat. Can you make sense of the following code and resulting figure? What does it mean if a given point lies on the diagonal for a given plot?
+
+```{r}
+pairs(x, col=rainbow(10), pch=16)
+```
+
+> Q6. What is the main differences between N. Ireland and the other countries of the UK in terms of this data-set?
+
+```{r}
+
+```
+
+## PCA to the Rescue
+
+The main "base" R function of PCA is called `prcomp()`. 
+
+```{r}
+pca <- prcomp(t(x))
+summary(pca)
+```
+
+
+> Q7. Complete the code below to generate a plot of PC1 vs PC2. The second line adds text labels over the data points.
+
+```{r}
+plot(pca$x[,1], pca$x[,2], xlab="PC1", ylab="PC2", xlim=c(-270,500))
+text(pca$x[,1], pca$x[,2], colnames(x))
+```
+
+> Q8. Customize your plot so that the colors of the country names match the colors in our UK and Ireland map and table at start of this document.
+
+```{r}
+plot(pca$x[,1], pca$x[,2], xlab="PC1", ylab="PC2", xlim=c(-270,500))
+text(pca$x[,1], pca$x[,2], colnames(x))
+```
+
+> Q. How much variance is captured in 2 PCs
+
+96.5%
+
+To make our main "PC score plot" or "PC1 vs PC2 plot", or "PC plot" or "ordination plot"
+
+```{r}
+attributes(pca)
+```
+
+We are after the `pca$x` result component to make our main PCA plot.
+
+```{r}
+pca$x
+```
+
+```{r}
+mycols <- c("orange", "red", "blue", "darkgreen")
+plot(pca$x[,1], pca$x[,2], col=mycols, pch=16, xlab = "PC1 (67.4%)", ylab = "PC2 (29%)")
+```
+
+Another important result from PCA is how the original variables (in this case foods) contribute to the PCs. 
+
+This is contained in the `pca$rotation` object - folks often call this the "loading" or "contributions" to the PCs
+
+```{r}
+pca$rotation
+```
+
+We can make a plot along PC1.
+
+```{r}
+library(ggplot2)
+
+contrib <- as.data.frame(pca$rotation)
+
+ggplot(contrib) +
+  aes(PC1, rownames(contrib)) +
+  geom_col(col = "pink")
+```
+
+
