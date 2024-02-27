@@ -1,0 +1,184 @@
+---
+title: "Class 6: R Functions"
+author: "Lana (PID: A17013518)"
+date: 01/25/24
+format: pdf
+---
+
+## R Functions
+
+Functions are how we get stuff done. We call functions to do everything useful in R.
+
+One cool thing about R is that it makes writing your own functions comparatively easy.
+
+All functions in R have at least three things:
+
+- A **name** (we get to pick this)
+- One or more **input arguments** (the input to our function)
+- The **body** (lines of code that do the work)
+
+```{r}
+#| eval: false 
+
+funname <- function(input 1, input 2) {
+  # The body with R code
+}
+```
+
+Let's write a silly function to add two numbers:
+
+```{r}
+x <- 5
+y <- 1
+x + y
+```
+
+```{r}
+addme <- function(x, y=1) {
+  x + y
+}
+```
+
+```{r}
+addme(100,100)
+```
+
+## Lab for today
+
+Write a function to grade student work from class.
+
+Start with a simplified version of the problem:
+
+```{r}
+student1 <- c(100, 73, 100, 88, 79)
+student2 <- c(85, 64, 78, 89, 78)
+student3 <- c(83, 69, 77, 100, 77)
+student4 <- c(88, NA, 73, 100, 76)
+```
+
+We want to drop the lowest score before getting the mean:
+
+```{r}
+which.min(student1)
+which.min(student2)
+```
+Cool - it is the 2nd element of the vector that has the lowest score. Can I remove this one?
+
+```{r}
+student1[which.min(student1)]
+student2[which.min(student2)]
+```
+
+We can use the three minus trick for extracting.
+
+```{r}
+x <- 1:5
+x[-3]
+```
+
+Let's find the average
+```{r}
+mean(student1)
+mean(student2, na.rm = TRUE)
+```
+
+```{r}
+# Find the lowest score
+ind <- which.min(student1)
+# remove the lowest score and find mean
+mean(student1[-ind])
+```
+
+Use a common shortcut and use `x` as my input
+```{r}
+x <- student1
+```
+
+How to make NA work: 
+```{r}
+!c(F,F,F)
+# y[ is.na(y) 
+```
+
+Okay let's solve this:
+
+```{r}
+# first set a variable to a student 
+x <- student1
+# next, set value of NA to 0
+x[ is.na(x)] <- 0
+# locate and remove the min value and calculate mean
+mean( x[-which.min(x)])
+```
+
+Last step now that I have my working snippet is to make my function:
+
+```{r}
+grade <- function(x) {
+  x[ is.na(x)] <- 0
+  mean( x[-which.min(x)])
+}
+```
+
+> Q1. Write a function grade() to determine an overall grade from a vector of student homework assignment scores dropping the lowest single score. If a student misses a homework (i.e. has an NA value) this can be used as a score to be potentially dropped. Your final function should be adquately explained with code comments and be able to work on an example class gradebook such as this one in CSV format: “https://tinyurl.com/gradeinput” 
+
+```{r}
+url <- "https://tinyurl.com/gradeinput"
+gradebook <- read.csv(url, row.names = 1)
+
+head(gradebook)
+```
+
+```{r}
+results <- apply(gradebook, 1, grade)
+results
+```
+
+
+```{r}
+grade <- function(x) {
+  x[ is.na(x)] <- 0
+  mean( x[-which.min(x)])
+}
+```
+
+
+> Q2. Using your grade() function and the supplied gradebook, Who is the top scoring student
+overall in the gradebook?
+
+```{r}
+max(results)
+which.max(results)
+```
+
+> Q3. From your analysis of the gradebook, which homework was toughest on students (i.e. obtained the lowest scores overall?
+
+```{r}
+results <- apply(gradebook, 2, mean, na.rm = T)
+results
+min(results)
+which.min(results)
+```
+
+> Q4. Optional Extension: From your analysis of the gradebook, which homework was most predictive of overall score (i.e. highest correlation with average grade score)?
+
+```{r}
+# make all NA to 0
+mask <- gradebook
+mask[is.na(mask)] <- 0
+```
+
+We can use the `cor()` function for correlation analysis.
+
+```{r}
+results <- apply(gradebook, 1, grade)
+cor(mask$hw5, results)
+```
+
+I need to use this `apply()` function to use this for the entire course.
+
+```{r}
+apply(mask, 2, cor, results)
+```
+
+
