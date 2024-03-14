@@ -1,0 +1,107 @@
+---
+title: "Class 10: Structural Bioinformatics Pt.1"
+author: "Lana (PID: A17013518)"
+format: pdf
+---
+
+# The PDB Database
+
+Here we examine the size and composition of the main database of the bio molecules structures- the PDB.
+
+Get a csv file from the PDB and read it in R.
+
+```{r}
+pdbstats<- read.csv("Data Export Summary.csv", row.names=1)
+  head(pdbstats)
+```
+
+> Q1: What percentage of structures in the PDB are solved by X-Ray and Electron Microscopy
+
+My pdbstats data frame has number with commas in them. This may cause problems.
+
+```{r}
+pdbstats$X.ray
+
+ as.numeric(pdbstats$X.ray)
+ 
+   x<- "22,200"
+  as.numeric(gsub(",","", x))
+```
+
+We found a function called ‘gsub’ now we can figure out how it works
+
+```{r}
+as.numeric(gsub(",","", x))
+
+ gsub(",","", pdbstats$X.ray)
+```
+
+I can turn this snip-it into a function that I can use on every column.
+
+```{r}
+ commasum<- function(x){
+    sum(as.numeric(gsub(",","", x)))
+  }
+  commasum(pdbstats$X.ray)
+```
+
+```{r}
+totals<-apply(pdbstats, 2, commasum)
+    
+round((totals/totals["Total"]*100),2)
+```
+
+84.54% are solved by x-ray and 8.72 is solved by EM.
+
+> Q2: What proportion of strutures in the PDB are protein?
+
+```{r}
+(215684/249751891*100)
+```
+
+## 2. Visualizing the HIV-1 protease structure
+
+You can use Mol* directly at the PDB website (as well as UniProt and elsewhere). However, for the latest and greatest version we will visit the Mol* homepage at: https://molstar.org/viewer/.
+
+We will play with PDB code 1HSG
+
+![](1HSG.png)
+
+# Back to R and working with PDB structures
+
+```{r}
+library(bio3d)
+
+hiv<- read.pdb("1hsg")
+
+hiv
+```
+
+```{r}
+head(hiv$atom)
+```
+
+```{r}
+pdbseq(hiv)
+```
+
+Here we will do a normal mode analysis (NMA) to predict functional motions of a kinase protein.
+
+```{r}
+adk<- read.pdb("6s36")
+
+adk
+```
+
+```{r}
+modes <- nma(adk)
+
+plot(modes)
+```
+
+Make a “move” called a trajectory of the predicted motions:
+
+```{r}
+mktrj(modes, file="adk_m7.pdb")
+```
+
