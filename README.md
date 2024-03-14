@@ -1,7 +1,7 @@
 # BIMM143
 Class work from Winter 2024 for [BIMM143](https://bioboot.github.io/bimm143_W24/) at UC San Diego.
 
-## Comtents
+## Contents
 
 - Class 4: [Data Analysis with R](https://github.com/lanadoan/BIMM143/tree/2c4bc436ed71deea61549d2b3eadc3f0e8e74fb5/class04)
 
